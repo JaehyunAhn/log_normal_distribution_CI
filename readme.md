@@ -1,27 +1,36 @@
 # Log-Normal Distribution CI
+
 <p align='right'>작성자: 안재현(sogosonnet@gmail.com)</p>
+
 ## Confidence Interval(CI)
+
 ### z-score
+
 <p align='center'>
-    ![](http://www.mathnstuff.com/math/spoken/here/2class/90/ztable.gif)<br>
+    <img src='http://www.mathnstuff.com/math/spoken/here/2class/90/ztable.gif'><br>
     그림1. z-score table
 </p>
 ### t-score
+
 <p align='center'>
-    ![](https://www.statisticshowto.datasciencecentral.com/wp-content/uploads/2013/08/t-score-vs.-z-score.png)<br>
+    <img src='https://www.statisticshowto.datasciencecentral.com/wp-content/uploads/2013/08/t-score-vs.-z-score.png'><br>
     그림2. t-score 의사 결정 모델(권고)
 </p>
 <p align='center'>
-    ![](http://sphweb.bumc.bu.edu/otlt/MPH-Modules/BS/BS704_Confidence_Intervals/SysBP_example-T_table.jpg)<br>
+    <img src='http://sphweb.bumc.bu.edu/otlt/MPH-Modules/BS/BS704_Confidence_Intervals/SysBP_example-T_table.jpg'><br>
     그림3. t-score table sample
 </p>
 <p align='center'>
-    ![](http://www.ttable.org/uploads/2/1/7/9/21795380/published/9754276.png?1517416376)<br>
+    <img src='http://www.ttable.org/uploads/2/1/7/9/21795380/published/9754276.png?1517416376'><br>
     그림4. t-score table
 </p>
+
 ## Cox Method
+
 ## Cox Method-modified
+
 # References
+
 1. Log-Normal Distribution을 계산하는 여러가지 합리적인 추측들: [http://jse.amstat.org/v13n1/olsson.html#Land1971](http://jse.amstat.org/v13n1/olsson.html#Land1971)
 2. Log-Normal Distribution: [https://en.wikipedia.org/wiki/Log-normal_distribution](https://en.wikipedia.org/wiki/Log-normal_distribution)
 3. T-score vs Z-score: [https://www.statisticshowto.datasciencecentral.com/probability-and-statistics/hypothesis-testing/t-score-vs-z-score/](https://www.statisticshowto.datasciencecentral.com/probability-and-statistics/hypothesis-testing/t-score-vs-z-score/)
