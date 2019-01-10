@@ -3,15 +3,12 @@ from math import sqrt, exp
 
 from ci import Z_VALUE, T_VALUE, SIGMAS, INDICES
 
-class LogCredibilityInterval(object):
-    """
-    신뢰구간을 리턴
-    one-tail: lower limit
-    two-tails: upper limit
-    """
+class CredibilityInterval(object):
     def __init__(self, mean, variance, sample_size, stdev=None):
         self.mean = mean
         self.variance = variance
+        if sample_size <= 0:
+            raise ValueError
         self.sample_size = sample_size
         if stdev is None:
             self.stdev = sqrt(self.variance)
@@ -24,9 +21,6 @@ class LogCredibilityInterval(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
-    def _exp(self, norm, vari):
-        return (exp(norm - vari), exp(norm + vari))
-
     def _normal_form(self, variate):
         """
         CI for normal distribution = mean +- z * sqrt(stdev/n)
@@ -35,8 +29,7 @@ class LogCredibilityInterval(object):
         """
         norm = self.mean
         vari = variate * sqrt(self.variance / self.sample_size)
-        return self._exp(norm, vari)
-
+        return (norm - vari, norm + vari)
 
     def _cox_form(self, variate):
         """
@@ -46,9 +39,9 @@ class LogCredibilityInterval(object):
         """
         norm = self.mean + self.variance / 2
         vari = variate * sqrt(self.variance / self.sample_size + (self.variance)**2 / (2 * (self.sample_size - 1)))
-        return self._exp(norm, vari)
+        return (norm - vari, norm + vari)
 
-    def get_variate(self, interval, z_value=True):
+    def get_variate(self, interval):
         """
         interval is string
         :type interval: str
@@ -63,7 +56,7 @@ class LogCredibilityInterval(object):
         else:
             # exception, no interval found
             raise ValueError
-        if z_value or self.sample_size > 30:
+        if self.sample_size > 31:
             return Z_VALUE[index]
         # 샘플 개수에 맞는 T-Value 리턴
         quotient = int((self.sample_size - 1) / 5)
@@ -94,8 +87,37 @@ class LogCredibilityInterval(object):
         """
         if interval is None:
             interval = '1-sigma'
-        variate = self.get_variate(interval, z_value=False)
+        variate = self.get_variate(interval)
         return self._cox_form(variate)
+
+
+
+class LogCredibilityInterval(CredibilityInterval):
+    """
+    신뢰구간을 리턴
+    one-tail: lower limit
+    two-tails: upper limit
+    """
+    def __init__(self, mean, variance, sample_size, stdev=None):
+        super().__init__(mean=mean, variance=variance, sample_size=sample_size, stdev=stdev)
+
+    def __del__(self):
+        pass
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+    def naive_method(self, interval=None):
+        return self._get_exp(super(LogCredibilityInterval, self).naive_method(interval))
+
+    def cox_method(self, interval=None):
+        return self._get_exp(super(LogCredibilityInterval, self).cox_method(interval))
+
+    def modified_cox_method(self, interval=None):
+        return self._get_exp(super(LogCredibilityInterval, self).modified_cox_method(interval))
+
+    def _get_exp(self, tp):
+        return (exp(tp[0]), exp(tp[1]))
 
 
 if __name__ == '__main__':

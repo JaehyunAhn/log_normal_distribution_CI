@@ -42,7 +42,7 @@ class LogNormDistrib(NormalDistrib):
         :type data: list
         """
         self.ln_data = [log(x) for x in data]
-        NormalDistrib.__init__(self, data=self.ln_data)
+        super().__init__(data=self.ln_data)
 
 
 if __name__ == '__main__':
