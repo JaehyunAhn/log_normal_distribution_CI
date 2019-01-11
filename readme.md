@@ -1,6 +1,6 @@
 # Log-Normal Distribution CI
 
-<p align='right'>Jaehyun Ahn([sogosonnet@gmail.com](mailto:sogosonnet@gmail.com))</p>
+<p align='right'>Jaehyun Ahn (<a href='mailto:sogosonnet@gmail.com'>sogosonnet@gmail.com</a>)</p>
 
 ## Confidence Interval(CI)
 

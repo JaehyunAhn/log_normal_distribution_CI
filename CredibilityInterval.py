@@ -41,7 +41,7 @@ class CredibilityInterval(object):
         vari = variate * sqrt(self.variance / self.sample_size + (self.variance)**2 / (2 * (self.sample_size - 1)))
         return (norm - vari, norm + vari)
 
-    def get_variate(self, interval):
+    def get_variate(self, interval, z_value=False):
         """
         interval is string
         :type interval: str
@@ -56,7 +56,7 @@ class CredibilityInterval(object):
         else:
             # exception, no interval found
             raise ValueError
-        if self.sample_size > 31:
+        if z_value or self.sample_size > 31:
             return Z_VALUE[index]
         # 샘플 개수에 맞는 T-Value 리턴
         quotient = int((self.sample_size - 1) / 5)
@@ -77,7 +77,7 @@ class CredibilityInterval(object):
         """
         if interval is None:
             interval = '1-sigma'
-        variate = self.get_variate(interval)
+        variate = self.get_variate(interval, z_value=True)
         return self._cox_form(variate)
 
     def modified_cox_method(self, interval=None):
@@ -100,12 +100,6 @@ class LogCredibilityInterval(CredibilityInterval):
     """
     def __init__(self, mean, variance, sample_size, stdev=None):
         super().__init__(mean=mean, variance=variance, sample_size=sample_size, stdev=stdev)
-
-    def __del__(self):
-        pass
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
 
     def naive_method(self, interval=None):
         return self._get_exp(super(LogCredibilityInterval, self).naive_method(interval))
