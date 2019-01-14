@@ -31,16 +31,6 @@ class CredibilityInterval(object):
         vari = variate * sqrt(self.variance / self.sample_size)
         return (norm - vari, norm + vari)
 
-    def _cox_form(self, variate):
-        """
-        CI for log(theta) = mean + stdev/2 +- z * sqrt(stdev/n + stdev^2/2(n-1)
-        :param variate:
-        :return:
-        """
-        norm = self.mean + self.variance / 2
-        vari = variate * sqrt(self.variance / self.sample_size + (self.variance)**2 / (2 * (self.sample_size - 1)))
-        return (norm - vari, norm + vari)
-
     def get_variate(self, interval, z_value=False):
         """
         interval is string
@@ -51,10 +41,11 @@ class CredibilityInterval(object):
         """
         if SIGMAS.get(interval) is not None:
             index = INDICES.get(SIGMAS.get(interval))
-        elif INDICES.get(interval):
+        elif INDICES.get(interval) is not None:
             index = INDICES.get(interval)
         else:
             # exception, no interval found
+            print('Interval: {}'.format(interval))
             raise ValueError
         if z_value or self.sample_size > 31:
             return Z_VALUE[index]
@@ -70,6 +61,33 @@ class CredibilityInterval(object):
         variate = self.get_variate(interval)
         return self._normal_form(variate)
 
+
+
+class LogCredibilityInterval(CredibilityInterval):
+    """
+    신뢰구간을 리턴
+    one-tail: lower limit
+    two-tails: upper limit
+    """
+    def __init__(self, log_mean, log_variance, sample_size, stdev=None):
+        super().__init__(mean=log_mean, variance=log_variance, sample_size=sample_size, stdev=stdev)
+
+    def _cox_form(self, variate):
+        """
+        CI for log(theta) = mean + stdev/2 +- z * sqrt(stdev/n + stdev^2/2(n-1)
+        :param variate:
+        :return:
+        """
+        norm = self.mean + self.variance / 2
+        vari = variate * sqrt(self.variance / self.sample_size + (self.variance)**2 / (2 * (self.sample_size - 1)))
+        return (norm - vari, norm + vari)
+
+    def _get_exp(self, tp):
+        return (exp(tp[0]), exp(tp[1]))
+
+    def naive_method(self, interval=None):
+        return self._get_exp(super(LogCredibilityInterval, self).naive_method(interval))
+
     def cox_method(self, interval=None):
         """
         Land (1971)
@@ -78,7 +96,7 @@ class CredibilityInterval(object):
         if interval is None:
             interval = '1-sigma'
         variate = self.get_variate(interval, z_value=True)
-        return self._cox_form(variate)
+        return self._get_exp(self._cox_form(variate))
 
     def modified_cox_method(self, interval=None):
         """
@@ -88,34 +106,11 @@ class CredibilityInterval(object):
         if interval is None:
             interval = '1-sigma'
         variate = self.get_variate(interval)
-        return self._cox_form(variate)
-
-
-
-class LogCredibilityInterval(CredibilityInterval):
-    """
-    신뢰구간을 리턴
-    one-tail: lower limit
-    two-tails: upper limit
-    """
-    def __init__(self, mean, variance, sample_size, stdev=None):
-        super().__init__(mean=mean, variance=variance, sample_size=sample_size, stdev=stdev)
-
-    def naive_method(self, interval=None):
-        return self._get_exp(super(LogCredibilityInterval, self).naive_method(interval))
-
-    def cox_method(self, interval=None):
-        return self._get_exp(super(LogCredibilityInterval, self).cox_method(interval))
-
-    def modified_cox_method(self, interval=None):
-        return self._get_exp(super(LogCredibilityInterval, self).modified_cox_method(interval))
-
-    def _get_exp(self, tp):
-        return (exp(tp[0]), exp(tp[1]))
+        return self._get_exp(self._cox_form(variate))
 
 
 if __name__ == '__main__':
-    a = LogCredibilityInterval(mean=5.127, variance=1.009, sample_size=40, stdev=1.004)
+    a = LogCredibilityInterval(log_mean=5.127, log_variance=1.009, sample_size=40, stdev=1.004)
     print(a.naive_method('95%'))
     print(a.cox_method('95%'))
     print(a.modified_cox_method('95%'))
