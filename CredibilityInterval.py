@@ -1,7 +1,7 @@
 # coding: utf-8
 from math import sqrt, exp
-
-from ci import Z_VALUE, T_VALUE, SIGMAS, INDICES
+from scipy.stats import t, norm
+from ci import CONFIDENCE
 
 class CredibilityInterval(object):
     def __init__(self, mean, variance, sample_size, stdev=None):
@@ -21,6 +21,14 @@ class CredibilityInterval(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
+    def _p2f(self, x):
+        """
+        Convert sting to float, example: x='95%', returns float 0.95.
+        :type x: str
+        :return:
+        """
+        return float(x.strip('%')) / 100
+
     def _normal_form(self, variate):
         """
         CI for normal distribution = mean +- z * sqrt(stdev/n)
@@ -31,29 +39,27 @@ class CredibilityInterval(object):
         vari = variate * sqrt(self.variance / self.sample_size)
         return (norm - vari, norm + vari)
 
-    def get_variate(self, interval, z_value=False):
+    def get_variate(self, interval, sample_size=None):
         """
         interval is string
-        :type interval: str
         :param interval: 1-sigma, 1/2/3-sigma, 50 ~ 95% CI
+        :type sample_size: int
+        :type interval: str
         :type return: float
         :return: variance number
         """
-        if SIGMAS.get(interval) is not None:
-            index = INDICES.get(SIGMAS.get(interval))
-        elif INDICES.get(interval) is not None:
-            index = INDICES.get(interval)
+        # get confidence
+        confidence = CONFIDENCE.get(interval)
+        if confidence is None:
+            confidence = self._p2f(x=interval)
+
+        # if No sample size then z-score, else t-score
+        if sample_size is None:
+            variate = norm.ppf((1 + confidence) / 2)
         else:
-            # exception, no interval found
-            print('Interval: {}'.format(interval))
-            raise ValueError
-        if z_value or self.sample_size > 31:
-            return Z_VALUE[index]
-        # 샘플 개수에 맞는 T-Value 리턴
-        quotient = int((self.sample_size - 1) / 5)
-        if quotient == 0:
-            quotient = 1
-        return T_VALUE[quotient * 5][index]
+            variate = t.ppf((1 + confidence) / 2, sample_size - 1)
+
+        return variate
 
     def naive_method(self, interval=None):
         if interval is None:
@@ -95,7 +101,7 @@ class LogCredibilityInterval(CredibilityInterval):
         """
         if interval is None:
             interval = '1-sigma'
-        variate = self.get_variate(interval, z_value=True)
+        variate = self.get_variate(interval)
         return self._get_exp(self._cox_form(variate))
 
     def modified_cox_method(self, interval=None):
@@ -105,7 +111,7 @@ class LogCredibilityInterval(CredibilityInterval):
         """
         if interval is None:
             interval = '1-sigma'
-        variate = self.get_variate(interval)
+        variate = self.get_variate(interval, sample_size=self.sample_size)
         return self._get_exp(self._cox_form(variate))
 
 
